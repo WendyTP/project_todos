@@ -53,13 +53,13 @@ post "/lists" do
 end
 
 # View a single list
-get "/lists/:id" do
-  id = params[:id].to_i
-  @list = session[:lists][id]
+get "/lists/:list_id" do
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
   erb :list, layout: :layout
 end
 
-# Render an edit existing list name form
+# Render an edit-list form for an exisiting todo list
 get "/lists/:id/edit" do
   id = params[:id].to_i
   @list = session[:lists][id]
@@ -72,7 +72,6 @@ post "/lists/:id" do
   id = params[:id].to_i
   @list = session[:lists][id]
 
-
   error = error_for_list_name(list_name)
   if error
     session[:error] = error
@@ -80,7 +79,7 @@ post "/lists/:id" do
   else
     @list[:name] = list_name
     session[:success] = "The list has been updated."
-    redirect "/lists/:id"
+    redirect "/lists/#{id}"
   end
 end
 
@@ -91,3 +90,31 @@ post "/lists/:id/delete" do
   session[:success] = "The list has been deleted"
   redirect "/lists"
 end
+
+# Return an error message if the todoname is invalid.
+# Return nil if name is valid.
+def error_for_todo_name(name, list)
+  if !(1..100).cover?(name.size)
+    "Todo must be between 1 and 100 characters."
+  elsif list[:todos].any? { |todo| todo[:name].downcase == name.downcase }
+    "Todo name must be unqiue."
+  end
+end
+
+# Add a todo item to a todo list
+post "/lists/:list_id/todos" do
+  todo = params[:todo].strip
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
+
+  error = error_for_todo_name(todo,@list)
+  if error
+    session[:error] = error
+    erb :list, layout: :layout
+  else
+    @list[:todos] << {name: todo, completed: false}
+    session[:success] = "The todo was added."
+    redirect "/lists/#{@list_id}"
+  end
+end
+
