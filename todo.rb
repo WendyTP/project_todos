@@ -103,18 +103,32 @@ end
 
 # Add a todo item to a todo list
 post "/lists/:list_id/todos" do
-  todo = params[:todo].strip
+  text = params[:todo].strip
   @list_id = params[:list_id].to_i
   @list = session[:lists][@list_id]
 
-  error = error_for_todo_name(todo,@list)
+  error = error_for_todo_name(text,@list)
   if error
     session[:error] = error
     erb :list, layout: :layout
   else
-    @list[:todos] << {name: todo, completed: false}
+    @list[:todos] << {name: text, completed: false}
     session[:success] = "The todo was added."
     redirect "/lists/#{@list_id}"
   end
+end
+
+# Delete a todo item
+post "/lists/:list_id/todos/:todo_id/delete" do
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
+  @todo_id = params[:todo_id].to_i
+  @list[:todos].delete_at(@todo_id)
+  #@todo = @list[:todos][@todo_id]
+  #@todo[:complete] = "true"
+  session[:success] = "The todo has been updated"
+  redirect "/lists/#{@list_id}"
+
+
 end
 
