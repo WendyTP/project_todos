@@ -12,6 +12,16 @@ before do
   session[:lists] ||= []
 end
 
+helpers do
+  def count_incomplete_todo_items(todo_list)
+    result = 0
+    todo_list[:todos].each do |todo|
+      result += 1 if todo[:completed] == false
+    end
+    result
+  end
+end
+
 get "/" do
   redirect "/lists"
 end
