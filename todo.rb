@@ -30,19 +30,11 @@ helpers do
   end
 
   def sort_lists(lists, &block)
-    incomplete_lists = {}
-    complete_lists = {}
+    complete_lists, incomplete_lists = lists.partition { |list| list_completed?(list) }
     
-    lists.each_with_index do |list, index|
-      if list_completed?(list)
-        complete_lists[list] = index
-      else
-        incomplete_lists[list] = index
-      end
-    end
-    
-    incomplete_lists.each(&block)
-    complete_lists.each(&block)
+    incomplete_lists.each { |list| block.call(list, lists.index(list))}
+
+    complete_lists.each { |list| block.call(list, lists.index(list))}
   end
 
   def sort_todos(todos, &block)
