@@ -28,6 +28,23 @@ helpers do
   def todos_total_count(list)
     list[:todos].size
   end
+
+  def sort_lists(lists, &block)
+    incomplete_lists = {}
+    complete_lists = {}
+    
+    lists.each_with_index do |list, index|
+      if list_completed?(list)
+        complete_lists[index] = list
+      else
+        incomplete_lists[index] = list
+      end
+    end
+    
+    incomplete_lists.each { |index, list| block.call(list, index)}
+    complete_lists.each { |index, list| block.call(list, index)}
+  end
+
 end
 
 before do
