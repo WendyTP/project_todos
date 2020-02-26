@@ -35,14 +35,30 @@ helpers do
     
     lists.each_with_index do |list, index|
       if list_completed?(list)
-        complete_lists[index] = list
+        complete_lists[list] = index
       else
-        incomplete_lists[index] = list
+        incomplete_lists[list] = index
       end
     end
     
-    incomplete_lists.each { |index, list| block.call(list, index)}
-    complete_lists.each { |index, list| block.call(list, index)}
+    incomplete_lists.each(&block)
+    complete_lists.each(&block)
+  end
+
+  def sort_todos(todos, &block)
+    incomplete_todos = {}
+    complete_todos = {}
+    
+    todos.each_with_index do |todo, index|
+      if todo[:completed]
+        complete_todos[todo] = index
+      else
+        incomplete_todos[todo] = index
+      end
+    end
+    
+    incomplete_todos.each(&block)
+    complete_todos.each(&block)
   end
 
 end
