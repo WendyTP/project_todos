@@ -10,14 +10,14 @@ end
 
 helpers do
   def list_completed?(list)
-    list[:todos].size > 0 && list[:todos].all?{ |todo| todo[:completed] == true }
+    todos_total_count(list) > 0 && todos_remaining_count(list) == 0
   end
 
   def list_class(list)
     "complete" if list_completed?(list)
   end
 
-  def count_incomplete_todo_items(list)
+  def todos_remaining_count(list)
     result = 0
     list[:todos].each do |todo|
       result += 1 if todo[:completed] == false
@@ -25,7 +25,7 @@ helpers do
     result
   end
 
-  def count_total_todo_items(list)
+  def todos_total_count(list)
     list[:todos].size
   end
 end
