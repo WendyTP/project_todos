@@ -124,14 +124,11 @@ post "/lists/:list_id/todos/:todo_id/delete" do
   @list = session[:lists][@list_id]
   @todo_id = params[:todo_id].to_i
   @list[:todos].delete_at(@todo_id)
-  #@todo = @list[:todos][@todo_id]
-  #@todo[:complete] = "true"
   session[:success] = "The todo has been updated"
   redirect "/lists/#{@list_id}"
 end
 
 # Update the status of a todo item
-# params[:completed] is a string `true`. What we want here is a boolean
 post "/lists/:list_id/todos/:todo_id" do
   @list_id = params[:list_id].to_i
   @list = session[:lists][@list_id]
@@ -141,6 +138,14 @@ post "/lists/:list_id/todos/:todo_id" do
   @todo[:completed] = is_completed
   session[:success] = "The todo has been updated"
   redirect "/lists/#{@list_id}"
+end
 
+# Mark all todos on a todo list as complete
+post "/lists/:list_id/complete_all" do
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
+  @list[:todos].map {|todo| todo[:completed] = true}
+  session[:success] = "All todos have been completed."
+  redirect "lists/#{@list_id}"
 end
 
