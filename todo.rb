@@ -8,6 +8,10 @@ configure do
   set :session_secret, 'secret'
 end
 
+configure do
+  set :erb, :escape_html => true
+end
+
 helpers do
   def list_completed?(list)
     todos_total_count(list) > 0 && todos_remaining_count(list) == 0
