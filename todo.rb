@@ -105,7 +105,13 @@ end
 get "/lists/:list_id" do
   @list_id = params[:list_id].to_i
   @list = session[:lists][@list_id]
-  erb :list, layout: :layout
+
+  if(0..(session[:lists].size-1)).cover?(@list_id)
+    erb :list, layout: :layout
+  else
+    session[:error] = "The specified list was not found."
+    redirect "/lists"
+  end
 end
 
 # Render an edit-list form for an exisiting todo list
@@ -196,4 +202,10 @@ post "/lists/:list_id/complete_all" do
   @list[:todos].map { |todo| todo[:completed] = true }
   session[:success] = "All todos have been completed."
   redirect "lists/#{@list_id}"
+end
+
+# Any non-existing route
+not_found do
+  session[:error] = "The specified list was not found"
+  redirect "/lists"
 end
