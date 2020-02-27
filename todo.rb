@@ -31,16 +31,15 @@ helpers do
 
   def sort_lists(lists, &block)
     complete_lists, incomplete_lists = lists.partition { |list| list_completed?(list) }
-    
-    incomplete_lists.each { |list| block.call(list, lists.index(list))}
 
-    complete_lists.each { |list| block.call(list, lists.index(list))}
+    incomplete_lists.each { |list| block.call(list, lists.index(list)) }
+    complete_lists.each { |list| block.call(list, lists.index(list)) }
   end
 
   def sort_todos(todos, &block)
     incomplete_todos = {}
     complete_todos = {}
-    
+
     todos.each_with_index do |todo, index|
       if todo[:completed]
         complete_todos[todo] = index
@@ -48,11 +47,10 @@ helpers do
         incomplete_todos[todo] = index
       end
     end
-    
+
     incomplete_todos.each(&block)
     complete_todos.each(&block)
   end
-
 end
 
 before do
@@ -154,12 +152,12 @@ post "/lists/:list_id/todos" do
   @list_id = params[:list_id].to_i
   @list = session[:lists][@list_id]
 
-  error = error_for_todo_name(text,@list)
+  error = error_for_todo_name(text, @list)
   if error
     session[:error] = error
     erb :list, layout: :layout
   else
-    @list[:todos] << {name: text, completed: false}
+    @list[:todos] << { name: text, completed: false }
     session[:success] = "The todo was added."
     redirect "/lists/#{@list_id}"
   end
@@ -191,8 +189,7 @@ end
 post "/lists/:list_id/complete_all" do
   @list_id = params[:list_id].to_i
   @list = session[:lists][@list_id]
-  @list[:todos].map {|todo| todo[:completed] = true}
+  @list[:todos].map { |todo| todo[:completed] = true }
   session[:success] = "All todos have been completed."
   redirect "lists/#{@list_id}"
 end
-
