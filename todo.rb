@@ -61,6 +61,16 @@ before do
   session[:lists] ||= []
 end
 
+def load_list(index)
+  if index && session[:lists][index]
+    list = session[:lists][index]
+    return list
+  else
+    session[:error] = "The specified list was not found."
+    redirect "/lists"
+  end
+end
+
 get "/" do
   redirect "/lists"
 end
@@ -104,20 +114,15 @@ end
 # View a single list
 get "/lists/:list_id" do
   @list_id = params[:list_id].to_i
-  @list = session[:lists][@list_id]
+  @list = load_list(@list_id)
 
-  if(0..(session[:lists].size-1)).cover?(@list_id)
-    erb :list, layout: :layout
-  else
-    session[:error] = "The specified list was not found."
-    redirect "/lists"
-  end
+  erb :list, layout: :layout
 end
 
 # Render an edit-list form for an exisiting todo list
 get "/lists/:id/edit" do
   id = params[:id].to_i
-  @list = session[:lists][id]
+  @list = load_list(id)
   erb :edit_list, layout: :layout
 end
 
@@ -125,7 +130,7 @@ end
 post "/lists/:id" do
   list_name = params[:list_name].strip
   id = params[:id].to_i
-  @list = session[:lists][id]
+  @list = load_list(id)
 
   error = error_for_list_name(list_name)
   if error
@@ -160,7 +165,7 @@ end
 post "/lists/:list_id/todos" do
   text = params[:todo].strip
   @list_id = params[:list_id].to_i
-  @list = session[:lists][@list_id]
+  @list = load_list(@list_id)
 
   error = error_for_todo_name(text, @list)
   if error
@@ -176,7 +181,7 @@ end
 # Delete a todo item
 post "/lists/:list_id/todos/:todo_id/delete" do
   @list_id = params[:list_id].to_i
-  @list = session[:lists][@list_id]
+  @list = load_list(@list_id)
   @todo_id = params[:todo_id].to_i
   @list[:todos].delete_at(@todo_id)
   session[:success] = "The todo has been updated"
@@ -186,7 +191,7 @@ end
 # Update the status of a todo item
 post "/lists/:list_id/todos/:todo_id" do
   @list_id = params[:list_id].to_i
-  @list = session[:lists][@list_id]
+  @list = load_list(@list_id)
   @todo_id = params[:todo_id].to_i
   @todo = @list[:todos][@todo_id]
   is_completed = params[:completed] == "true"
@@ -198,14 +203,8 @@ end
 # Mark all todos on a todo list as complete
 post "/lists/:list_id/complete_all" do
   @list_id = params[:list_id].to_i
-  @list = session[:lists][@list_id]
+  @list = load_list(@list_id)
   @list[:todos].map { |todo| todo[:completed] = true }
   session[:success] = "All todos have been completed."
   redirect "lists/#{@list_id}"
-end
-
-# Any non-existing route
-not_found do
-  session[:error] = "The specified list was not found"
-  redirect "/lists"
 end
