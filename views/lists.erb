@@ -5,7 +5,7 @@
       <a href= "/lists/<%= index %>">
         <h2><%= list[:name] %></h2> 
           <p>
-            <%= count_incomplete_todo_items(list) %> / <%= count_total_todo_items(list) %>
+            <%= todos_remaining_count(list) %> / <%= todos_total_count(list) %>
           </p>
       </a>
     </li>
