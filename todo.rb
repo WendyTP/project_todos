@@ -41,19 +41,10 @@ helpers do
   end
 
   def sort_todos(todos, &block)
-    incomplete_todos = {}
-    complete_todos = {}
+    complete_todos, incomplete_todos = todos.partition { |todo| todo[:completed] }
 
-    todos.each_with_index do |todo, index|
-      if todo[:completed]
-        complete_todos[todo] = index
-      else
-        incomplete_todos[todo] = index
-      end
-    end
-
-    incomplete_todos.each(&block)
-    complete_todos.each(&block)
+    incomplete_todos.each { |todo| block.call(todo) }
+    complete_todos.each { |todo| block.call(todo) }
   end
 end
 
@@ -165,6 +156,12 @@ def error_for_todo_name(name, list)
   end
 end
 
+# assign todo_id to new todo item
+def next_todo_id(todos)
+max_existing_todo_id = todos.map {|todo| todo[:id]}.max || 0
+max_existing_todo_id + 1
+end
+
 # Add a todo item to a todo list
 post "/lists/:list_id/todos" do
   text = params[:todo].strip
@@ -176,7 +173,8 @@ post "/lists/:list_id/todos" do
     session[:error] = error
     erb :list, layout: :layout
   else
-    @list[:todos] << { name: text, completed: false }
+    todo_id = next_todo_id(@list[:todos])
+    @list[:todos] << { id: todo_id, name: text, completed: false }
     session[:success] = "The todo was added."
     redirect "/lists/#{@list_id}"
   end
@@ -186,8 +184,9 @@ end
 post "/lists/:list_id/todos/:todo_id/delete" do
   @list_id = params[:list_id].to_i
   @list = load_list(@list_id)
-  @todo_id = params[:todo_id].to_i
-  @list[:todos].delete_at(@todo_id)
+  todo_id = params[:todo_id].to_i
+  @list[:todos].reject! {|todo| todo[:id] == todo_id}
+
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
     status 204
   else
@@ -200,8 +199,8 @@ end
 post "/lists/:list_id/todos/:todo_id" do
   @list_id = params[:list_id].to_i
   @list = load_list(@list_id)
-  @todo_id = params[:todo_id].to_i
-  @todo = @list[:todos][@todo_id]
+  todo_id = params[:todo_id].to_i
+  @todo = @list[:todos].find { |todo| todo[:id] == todo_id}
   is_completed = params[:completed] == "true"
   @todo[:completed] = is_completed
   session[:success] = "The todo has been updated"
