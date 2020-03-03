@@ -12,6 +12,10 @@ configure do
   set :erb, :escape_html => true
 end
 
+before do
+  session[:lists] ||= []
+end
+
 helpers do
   def list_completed?(list)
     todos_total_count(list) > 0 && todos_remaining_count(list) == 0
@@ -46,10 +50,6 @@ helpers do
     incomplete_todos.each { |todo| block.call(todo) }
     complete_todos.each { |todo| block.call(todo) }
   end
-end
-
-before do
-  session[:lists] ||= []
 end
 
 def load_list(id)
